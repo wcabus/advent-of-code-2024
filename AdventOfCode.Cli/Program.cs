@@ -1,7 +1,7 @@
 ﻿using System.Diagnostics;
 using AdventOfCode.Cli;
 
-var day = new Day4();
+var day = new Day5();
 
 var sw = Stopwatch.StartNew();
 await day.Task1();
