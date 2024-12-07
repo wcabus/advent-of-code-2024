@@ -1,9 +1,7 @@
-﻿// See https://aka.ms/new-console-template for more information
-
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using AdventOfCode.Cli;
 
-var day = new Day3();
+var day = new Day4();
 
 var sw = Stopwatch.StartNew();
 await day.Task1();
