@@ -17,4 +17,9 @@ public static class Helpers
             yield return line;
         }
     }
+    
+    public static async Task<string[]> GetAllLinesAsync(string filename)
+    {
+        return await File.ReadAllLinesAsync(filename).ConfigureAwait(false);
+    }
 }
