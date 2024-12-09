@@ -79,13 +79,13 @@ public class Day6
         public void StartMoving()
         {
             PositionsHeld = 1;
-            var gridPositions = new Dictionary<(int row, int col), GridPosition>();
+            var gridPositions = new Dictionary<Point, GridPosition>();
             
             var row = Row;
             var col = Col;
             var direction = Direction;
             _grid![row, col] = 'Y'; // we've been here and started here
-            gridPositions.Add((row, col), new GridPosition(direction));
+            gridPositions.Add(new Point(row, col), new GridPosition(direction));
 
             var maxRow = _grid!.GetLength(0);
             var maxCol = _grid!.GetLength(1);
@@ -118,7 +118,7 @@ public class Day6
 
                 if (_grid[nextRow, nextCol] == '.' || _grid[nextRow, nextCol] == 'X' || _grid[nextRow, nextCol] == 'Y')
                 {
-                    if (gridPositions.TryGetValue((nextRow, nextCol), out var gridPosition))
+                    if (gridPositions.TryGetValue(new Point(nextRow, nextCol), out var gridPosition))
                     {
                         gridPosition.Visit(direction);
                         if (gridPosition.DuplicateVisits)
@@ -129,7 +129,7 @@ public class Day6
                     }
                     else
                     {
-                        gridPositions.Add((nextRow, nextCol), new GridPosition(direction));
+                        gridPositions.Add(new Point(nextRow, nextCol), new GridPosition(direction));
                     }
                     
                     if (_grid[nextRow, nextCol] == '.')
@@ -214,6 +214,8 @@ public class Day6
         }
     }
 
+    readonly record struct Point(int Row, int Col); 
+    
     class GridPosition
     {
         public GridPosition(char initialDirection)
@@ -246,5 +248,5 @@ public class Day6
         public int Down { get; private set; }
         public int Left { get; private set; }
         public int Right { get; private set; }
-    };
+    }
 }
