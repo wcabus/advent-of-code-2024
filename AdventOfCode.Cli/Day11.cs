@@ -2,11 +2,15 @@
 
 public class Day11
 {
-    private long BlinkTimes(Dictionary<long, long> stones, int times)
+    private static Dictionary<long, long> _workInstance = new();
+    
+    private static long BlinkTimes(Dictionary<long, long> stones, int times)
     {
         while (times > 0)
         {
-            var newStones = new Dictionary<long, long>();
+            _workInstance.Clear();
+            var newStones = _workInstance;
+            
             foreach (var stone in stones)
             {
                 // Every time we'd encounter a 0 in the original dictionary, add the number of 0-value stones to the 1-value stones instead
@@ -18,11 +22,18 @@ public class Day11
                 }
 
                 // Every time we encounter the same even-length stone, split it in half and add the number of stones to each half
-                var stoneAsString = stone.Key + "";
-                if (stoneAsString.Length % 2 == 0)
+                var numberOfDigits = CountNumberOfDigits(stone.Key);
+                if (numberOfDigits % 2 == 0)
                 {
-                    var leftStone = long.Parse(stoneAsString[..(stoneAsString.Length / 2)]);
-                    var rightStone = long.Parse(stoneAsString[(stoneAsString.Length / 2)..]);
+                    var factor = 10;
+                    numberOfDigits /= 2;
+                    while (--numberOfDigits > 0)
+                    {
+                        factor *= 10;
+                    }
+                    
+                    var leftStone = stone.Key / factor;
+                    var rightStone = stone.Key % factor;
 
                     newStones.TryAdd(leftStone, 0);
                     newStones[leftStone] += stone.Value;
@@ -38,11 +49,23 @@ public class Day11
                 newStones[stone.Key * 2024] += stone.Value;
             }
             
-            stones = newStones;
+            (_workInstance, stones) = (stones, newStones);
             times--;
         }
 
         return stones.Sum(x => x.Value);
+    }
+
+    private static int CountNumberOfDigits(long value)
+    {
+        var digits = 1;
+        while (value >= 10)
+        {
+            digits++;
+            value /= 10;
+        }
+
+        return digits;
     }
 
 
