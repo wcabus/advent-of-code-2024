@@ -22,4 +22,9 @@ public static class Helpers
     {
         return await File.ReadAllLinesAsync(filename).ConfigureAwait(false);
     }
+    
+    public static async Task<string> GetFullTextAsync(string filename)
+    {
+        return await File.ReadAllTextAsync(filename).ConfigureAwait(false);
+    }
 }
