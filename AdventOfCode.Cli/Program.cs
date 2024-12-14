@@ -1,7 +1,8 @@
 ﻿using System.Diagnostics;
 using AdventOfCode.Cli;
 
-var day = new Day13();
+var day = new Day14();
+await day.ParseDataAsync(@"C:\temp\aoc\day14-input.txt");
 
 var sw = Stopwatch.StartNew();
 await day.Task1();
