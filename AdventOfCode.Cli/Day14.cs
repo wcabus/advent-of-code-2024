@@ -57,6 +57,8 @@ public class Day14
     
     public async ValueTask ParseDataAsync(string path)
     {
+        _robots.Clear();
+        
         await foreach (var line in Helpers.GetInput(path))
         {
             var positionData = line[2..line.IndexOf(' ')].Split(',').Select(int.Parse).ToArray();
