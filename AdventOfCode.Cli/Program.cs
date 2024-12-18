@@ -9,11 +9,11 @@ var day = new Day17();
 await day.ParseDataAsync(path);
 
 var sw = Stopwatch.StartNew();
-// await day.Task1();
-// sw.Stop();
-// Console.WriteLine($"Task 1: {sw.ElapsedMilliseconds}ms");
-//
-// await day.ParseDataAsync(path);
+await day.Task1();
+sw.Stop();
+Console.WriteLine($"Task 1: {sw.ElapsedMilliseconds}ms");
+
+await day.ParseDataAsync(path);
 
 sw.Restart();
 await day.Task2();

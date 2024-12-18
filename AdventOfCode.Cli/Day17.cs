@@ -1,4 +1,7 @@
-﻿namespace AdventOfCode.Cli;
+﻿using System.Collections.Concurrent;
+using System.Numerics;
+
+namespace AdventOfCode.Cli;
 
 public class Day17
 {
@@ -14,7 +17,7 @@ public class Day17
         private long _registerC = registerC;
         private int _instructionPointer;
 
-        private readonly List<long> _output = [];
+        private readonly List<int> _output = [];
         
         // instructions
         private const int ADV = 0;
@@ -53,7 +56,7 @@ public class Day17
                     case BDV:
                     case CDV:
                         // Divide A register value by combo operand
-                        var value = (int)Math.Floor(_registerA / Math.Pow(2, GetComboOperand(program[_instructionPointer + 1])));
+                        long value = _registerA >> (int)GetComboOperand(program[_instructionPointer + 1]);
 
                         // Store in A, B or C depending on the opcode
                         switch (instruction)
@@ -78,14 +81,14 @@ public class Day17
                         // Perform bitwise XOR between register B and the literal operand or register C (depending on the opcode)
                         var operand = instruction == BXC ? _registerC : program[_instructionPointer + 1];
                         // Store in B
-                        _registerB ^= operand; // potentially (_registerB % 8) ^ (operand % 8) 
+                        _registerB ^= operand; 
                         _instructionPointer += 2;
                         
                         break;
 
                     case BST:
                         // Combo operand MOD 8 => B
-                        _registerB = GetComboOperand(program[_instructionPointer + 1]) % 8;
+                        _registerB = GetComboOperand(program[_instructionPointer + 1]) & 7;
                         _instructionPointer += 2;
                         break;
 
@@ -97,12 +100,12 @@ public class Day17
                             break;
                         }
                         
-                        _instructionPointer += 2; // or 0!
+                        _instructionPointer += 2;
                         break;
                     
                     case OUT:
                         // Combo operand MOD 8 => output comma separated
-                        _output.Add(GetComboOperand(program[_instructionPointer + 1]) % 8);
+                        _output.Add((int)(GetComboOperand(program[_instructionPointer + 1]) & 7));
                         _instructionPointer += 2;
                         break;
                     
@@ -112,7 +115,7 @@ public class Day17
             }
         }
 
-        public IReadOnlyCollection<long> Output => _output;
+        public IReadOnlyCollection<int> Output => _output;
     }
 
     public async ValueTask ParseDataAsync(string path)
@@ -135,39 +138,61 @@ public class Day17
 
     public ValueTask Task2()
     {
-        var result = -1L;
-        var start = 4.526.000.000.000.000L;
-
-        // for (var i = 2048; i <= 4096; i++)
-        // {
-        //     var computer = new Computer(_program, i, _registerB, _registerC);
-        //     computer.RunCpu();
-        //     Console.WriteLine($"A = {i}");
-        //     Console.WriteLine($"Out = {string.Join(',', computer.Output)}");
-        //     Console.WriteLine();
-        // }
-        
-        Parallel.For<long>(start, long.MaxValue, () => 0, (i, state, _) =>
+        var shiftPerCycle = 0;
+        for (var i = 0; i < _program.Length; i +=2 )
         {
-            var computer = new Computer(_program, i, _registerB, _registerC);
-            computer.RunCpu(state);
-            if (computer.Output.Count == _program.Length && computer.Output.Zip(_program, (a, b) => a == b).All(x => x))
+            if (_program[i] == 0)
             {
-                state.Break();
-                return i;
+                shiftPerCycle = _program[i + 1];
             }
+        }
+        var bitsToCheck = shiftPerCycle + 8;
         
-            return -1;
-        },
-        local =>
+        var dictionary = new ConcurrentDictionary<(long, int), HashSet<long>>();
+        var solutions = FindA(0, 0).ToList();
+        Console.WriteLine(solutions.Min());
+        
+        HashSet<long> FindA(long a, int programDigit)
         {
-            if (local != -1)
+            if (dictionary.TryGetValue((a, programDigit), out var memory))
             {
-                Interlocked.Exchange(ref result, local);
-            }   
-        });
+                return memory;
+            }
+            
+            if (programDigit >= _program.Length)
+            {
+                dictionary[(a, programDigit)] = [0];
+                return [0];
+            }
+            
+            var candidates = new HashSet<long>();
+            var offset = (long)BitOperations.RoundUpToPowerOf2((ulong)a + 1);
+            for (var i = a; i < 1 << bitsToCheck; i += offset)
+            {
+                var computer = new Computer(_program, i, _registerB, _registerC);
+                computer.RunCpu();
+                var output = computer.Output.First();
+                if (output == _program[programDigit])
+                {
+                    var nextCandidates = FindA(i >> shiftPerCycle, programDigit + 1);
+                    foreach (var c in nextCandidates)
+                    {
+                        var concatCandI = (c << shiftPerCycle) | i;
+                        var secondComputer = new Computer(_program, concatCandI, _registerB, _registerC);
+                        secondComputer.RunCpu();
+                        var secondOutput = secondComputer.Output;
+                        if (secondOutput.Zip(_program.Skip(programDigit), (o, p) => o == p).All(x => x))
+                        {
+                            candidates.Add(concatCandI);
+                        }
+                    }
+                }
+            }
+            
+            dictionary[(a, programDigit)] = candidates;
+            return candidates;
+        }
         
-        Console.WriteLine(result);
         return ValueTask.CompletedTask;
     }
 }
