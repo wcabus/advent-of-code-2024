@@ -1,21 +1,18 @@
 ﻿using System.Diagnostics;
 using AdventOfCode.Cli;
 
-// const bool testinput = true;
-// const string path = @"C:\temp\aoc\day18-testinput.txt";
+// const string path = @"C:\temp\aoc\day19-testinput.txt";
+const string path = @"C:\temp\aoc\day19-input.txt";
 
-const bool testinput = false;
-const string path = @"C:\temp\aoc\day18-input.txt";
-
-var day = new Day18();
-await day.ParseDataAsync(path, testinput);
+var day = new Day19();
+await day.ParseDataAsync(path);
 
 var sw = Stopwatch.StartNew();
 await day.Task1();
 sw.Stop();
 Console.WriteLine($"Task 1: {sw.ElapsedMilliseconds}ms");
 
-await day.ParseDataAsync(path, testinput);
+await day.ParseDataAsync(path);
 
 sw.Restart();
 await day.Task2();
